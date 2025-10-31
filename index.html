@@ -26,7 +26,6 @@
       z-index: -1;
     }
 
-    /* 🧊 液态玻璃风格 */
     .login-box, .diary-box {
       text-align: center;
       background: rgba(255, 255, 255, 0.08);
@@ -37,11 +36,6 @@
       border: 1px solid rgba(255, 255, 255, 0.25);
       box-shadow: 0 8px 40px rgba(255, 255, 255, 0.1);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .login-box:hover, .diary-box:hover {
-      transform: scale(1.03);
-      box-shadow: 0 12px 45px rgba(255, 255, 255, 0.2);
     }
 
     h1 {
@@ -57,8 +51,6 @@
       border-radius: 15px;
       border: 1px solid rgba(255, 255, 255, 0.25);
       background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
       color: #fff;
       font-size: 18px;
       text-align: center;
@@ -83,11 +75,7 @@
       border-radius: 18px;
       color: white;
       font-size: 18px;
-      font-weight: 500;
       cursor: pointer;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 5px 25px rgba(80,160,255,0.3);
       transition: transform 0.2s ease, box-shadow 0.3s ease;
     }
 
@@ -108,11 +96,6 @@
       letter-spacing: 2px;
       background-color: rgba(63,169,245,0.4);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .text-box:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 35px rgba(63,169,245,0.9);
     }
 
     .diary-content {
@@ -138,8 +121,6 @@
 </head>
 <body>
   <canvas id="snow"></canvas>
-
-  <!-- 登录界面 -->
   <div id="login" class="login-box">
     <h1>请输入访问口令</h1>
     <input id="keyInput" placeholder="例如：A7K3F2" />
@@ -148,14 +129,12 @@
     <p id="hint" style="color:#fff; margin-top:15px;"></p>
   </div>
 
-  <!-- 日记界面 -->
   <div id="diary" class="diary-box" style="display:none;">
     <div id="text" class="text-box">查看今天的日记</div>
     <div id="content" class="diary-content"></div>
   </div>
 
   <script>
-    /* ❄️ 雪花特效 */
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     let w, h;
@@ -203,7 +182,10 @@
     createSnowflakes(350);
     animateSnow();
 
-    /* 🔐 登录逻辑 */
+    // 永久固定的管理员口令
+    const PERMANENT_KEY = "123456";
+
+    // 随机生成20个口令
     function generateRandomKey() {
       const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
       let key = "";
@@ -214,15 +196,17 @@
     }
 
     const validKeys = Array.from({length: 20}, generateRandomKey);
-    console.log("✅ 当前可用口令:", validKeys.join(", "));
+    console.log("✅ 当前可用口令:", [...validKeys, PERMANENT_KEY].join(", "));
 
     function verifyKey() {
       const input = document.getElementById("keyInput").value.trim();
       const hint = document.getElementById("hint");
-      if (validKeys.includes(input)) {
+
+      if (input === PERMANENT_KEY || validKeys.includes(input)) {
         localStorage.setItem("verified", "true");
         document.getElementById("login").style.display = "none";
         document.getElementById("diary").style.display = "block";
+        hint.textContent = "";
       } else {
         hint.textContent = "❌ 口令错误，请重新输入";
       }
@@ -233,7 +217,6 @@
       document.getElementById("diary").style.display = "block";
     }
 
-    /* ☁️ 从 GitHub 文库加载日记 */
     let diaryEntries = [];
     async function loadDiaries() {
       try {
