@@ -183,34 +183,32 @@
     animateSnow();
 
     // 永久固定的管理员口令
-    const PERMANENT_KEY = "123456";
+   const PERMANENT_KEY = "123456";
 
-    // 随机生成20个口令
-    function generateRandomKey() {
-      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-      let key = "";
-      for (let i = 0; i < 6; i++) {
-        key += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return key;
-    }
+/* 🔐 登录验证 */
+function verifyKey() {
+  const input = document.getElementById("keyInput").value.trim();
+  const hint = document.getElementById("hint");
 
-    const validKeys = Array.from({length: 20}, generateRandomKey);
-    console.log("✅ 当前可用口令:", [...validKeys, PERMANENT_KEY].join(", "));
+  // ✅ 检查是否匹配永久口令
+  if (input === PERMANENT_KEY) {
+    localStorage.setItem("verified", "true");
+    document.getElementById("login").style.display = "none";
+    document.getElementById("diary").style.display = "block";
+    hint.textContent = "";
+    return;
+  }
 
-    function verifyKey() {
-      const input = document.getElementById("keyInput").value.trim();
-      const hint = document.getElementById("hint");
-
-      if (input === PERMANENT_KEY || validKeys.includes(input)) {
-        localStorage.setItem("verified", "true");
-        document.getElementById("login").style.display = "none";
-        document.getElementById("diary").style.display = "block";
-        hint.textContent = "";
-      } else {
-        hint.textContent = "❌ 口令错误，请重新输入";
-      }
-    }
+  // ✅ 检查是否匹配随机生成口令
+  if (Array.isArray(validKeys) && validKeys.includes(input)) {
+    localStorage.setItem("verified", "true");
+    document.getElementById("login").style.display = "none";
+    document.getElementById("diary").style.display = "block";
+    hint.textContent = "";
+  } else {
+    hint.textContent = "❌ 口令错误，请重新输入";
+  }
+}
 
     if (localStorage.getItem("verified") === "true") {
       document.getElementById("login").style.display = "none";
