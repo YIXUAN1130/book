@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>恋·白月光 日记本</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #000; /* 夜空黑 */
+      font-family: "Microsoft YaHei", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    canvas#snow {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    .login-box, .diary-box {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.12);
+      padding: 40px 60px;
+      border-radius: 20px;
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(8px);
+    }
+
+    h1 {
+      color: #ffffff;
+      font-size: 26px;
+      margin-bottom: 20px;
+      letter-spacing: 2px;
+    }
+
+    input {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+      font-size: 18px;
+      text-align: center;
+      background: #ffffff;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 40px;
+      background-color: #3fa9f5; /* 冷蓝 */
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px rgba(63,169,245,0.8);
+    }
+
+    .text-box {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 30px 60px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      color: #ffffff;
+      font-size: 28px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      background-color: rgba(63,169,245,0.4);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .text-box:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 35px rgba(63,169,245,0.9);
+    }
+
+    .diary-content {
+      display: none;
+      color: #ffffff;
+      font-size: 20px;
+      line-height: 1.8;
+      max-width: 80%;
+      text-align: left;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
+      animation: fadeIn 1s ease;
+      margin-top: 30px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="snow"></canvas>
+
+  <!-- 登录界面 -->
+  <div id="login" class="login-box">
+    <h1>请输入访问口令</h1>
+    <input id="keyInput" placeholder="例如：A7K3F2" />
+    <br />
+    <button onclick="verifyKey()">进入</button>
+    <p id="hint" style="color:#fff; margin-top:15px;"></p>
+  </div>
+
+  <!-- 日记界面 -->
+  <div id="diary" class="diary-box" style="display:none;">
+    <div id="text" class="text-box">查看今天的日记</div>
+    <div id="content" class="diary-content"></div>
+  </div>
+
+  <script>
+    /* ❄️ 雪花特效（更密集 + 更柔和） */
+    const canvas = document.getElementById("snow");
+    const ctx = canvas.getContext("2d");
+    let w, h;
+    const snowflakes = [];
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener("resize", resize);
+    resize();
+
+    class Snowflake {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * w;
+        this.y = Math.random() * h;
+        this.radius = Math.random() * 3 + 1;
+        this.speedY = Math.random() * 3 + 1; // 更快
+        this.speedX = Math.random() * 1 - 0.5;
+        this.opacity = Math.random() * 0.8 + 0.2;
+      }
+      update() {
+        this.y += this.speedY;
+        this.x += this.speedX;
+        if (this.y > h) this.reset(), this.y = -10;
+        if (this.x > w) this.x = 0;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
+        ctx.fill();
+      }
+    }
+
+    function createSnowflakes(num) {
+      for (let i = 0; i < num; i++) snowflakes.push(new Snowflake());
+    }
+
+    function animateSnow() {
+      ctx.clearRect(0, 0, w, h);
+      snowflakes.forEach(snow => {
+        snow.update();
+        snow.draw();
+      });
+      requestAnimationFrame(animateSnow);
+    }
+
+    createSnowflakes(300); // ❄️ 更密集
+    animateSnow();
+
+    /* 🔐 登录逻辑 */
+    function generateRandomKey() {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      let key = "";
+      for (let i = 0; i < 6; i++) {
+        key += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return key;
+    }
+
+    const validKeys = Array.from({length: 20}, generateRandomKey);
+    console.log("当前可用口令:", validKeys.join(", "));
+
+    function verifyKey() {
+      const input = document.getElementById("keyInput").value.trim();
+      const hint = document.getElementById("hint");
+
+      if (validKeys.includes(input)) {
+        localStorage.setItem("verified", "true");
+        document.getElementById("login").style.display = "none";
+        document.getElementById("diary").style.display = "block";
+      } else {
+        hint.textContent = "❌ 口令错误，请重新输入";
+      }
+    }
+
+    if (localStorage.getItem("verified") === "true") {
+      document.getElementById("login").style.display = "none";
+      document.getElementById("diary").style.display = "block";
+    }
+
+    /* 🌙 日记逻辑 */
+    const diaryEntries = [
+      "夜色如墨，雪落无声。风拂过窗，灯影轻摇，我的思绪也随之慢慢飘远。",
+      "雪落人间，月光隐去。世界安静得只剩下呼吸与心跳的节奏。",
+      "我看见雪花一片片坠落，仿佛每一片都带着昨日的记忆与未说出口的温柔。",
+      "风很轻，雪很白，心也在这夜色里变得柔软。",
+      "窗外的雪在堆积，像是在替我记录每一个未寄出的梦。"
+    ];
+
+    document.getElementById("text").addEventListener("click", () => {
+      const randomEntry = diaryEntries[Math.floor(Math.random() * diaryEntries.length)];
+      document.getElementById("content").innerHTML = `<h2>🌙 今日的白月光日记</h2><p>${randomEntry}</p>`;
+      document.getElementById("text").style.display = "none";
+      document.getElementById("content").style.display = "block";
+    });
+  </script>
+</body>
+</html>
