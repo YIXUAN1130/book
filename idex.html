@@ -155,7 +155,6 @@
   </div>
 
   <script>
-    // ✅ 修正移动端可视高度
     function setVh() {
       document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
     }
@@ -163,7 +162,6 @@
     window.addEventListener('orientationchange', setVh);
     setVh();
 
-    // ❄️ 雪花动画
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     let w, h;
@@ -211,7 +209,6 @@
     createSnowflakes(240);
     animateSnow();
 
-    // 🔐 登录逻辑
     const PERMANENT_KEY = "123456";
     function generateRandomKey() {
       const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -234,7 +231,7 @@
       }
     }
 
-    // 🌙 日记逻辑（随机日期标题）
+    // 🌙 日记逻辑（随机日期标题 + 不重复抽取）
     function getRandomDate() {
       const month = Math.floor(Math.random() * 12) + 1;
       const day = Math.floor(Math.random() * 28) + 1;
@@ -242,6 +239,19 @@
     }
 
     let diaryEntries = [];
+    let usedIndexes = [];
+
+    function getRandomEntryNoRepeat() {
+      if (diaryEntries.length === 0) return "";
+      if (usedIndexes.length === diaryEntries.length) usedIndexes = [];
+      let index;
+      do {
+        index = Math.floor(Math.random() * diaryEntries.length);
+      } while (usedIndexes.includes(index));
+      usedIndexes.push(index);
+      return diaryEntries[index];
+    }
+
     async function loadDiaries() {
       try {
         const res = await fetch("https://raw.githubusercontent.com/YIXUAN1130/book/refs/heads/main/diary_date.json");
@@ -255,7 +265,7 @@
     document.getElementById("text").addEventListener("click", async () => {
       if (diaryEntries.length === 0) await loadDiaries();
       if (diaryEntries.length > 0) {
-        const randomEntry = diaryEntries[Math.floor(Math.random() * diaryEntries.length)];
+        const randomEntry = getRandomEntryNoRepeat();
         const randomDate = getRandomDate();
         document.getElementById("content").innerHTML = `<h2>🌙 ${randomDate} 的白月光日记</h2><p>${randomEntry}</p>`;
       }
@@ -265,5 +275,3 @@
   </script>
 </body>
 </html>
-
-
