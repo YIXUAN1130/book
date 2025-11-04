@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>夢占日記本</title>
   <style>
-    /* ✅ 加入沐瑶软笔手写体 */
+    /* ✅ 导入沐瑶软笔手写体 */
     @font-face {
       font-family: 'MuyaoSoft';
       src: url('./Muyao-Softbrush.ttf') format('truetype');
@@ -64,6 +64,7 @@
       background: linear-gradient(120deg, #d5f2fb, #9fd8f5, #c8ebff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      font-family: 'MuyaoSoft', "SF Pro Display", "Microsoft YaHei", sans-serif;
     }
 
     input {
@@ -80,6 +81,11 @@
       backdrop-filter: blur(25px);
       -webkit-backdrop-filter: blur(25px);
       transition: all 0.3s ease;
+      font-family: 'MuyaoSoft', "SF Pro Display", "Microsoft YaHei", sans-serif;
+    }
+
+    input::placeholder {
+      color: rgba(255,255,255,0.6);
     }
 
     input:focus {
@@ -98,6 +104,7 @@
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
       transition: all 0.3s ease;
       backdrop-filter: blur(25px);
+      font-family: 'MuyaoSoft', "SF Pro Display", "Microsoft YaHei", sans-serif;
     }
 
     button:hover {
@@ -114,6 +121,7 @@
       transition: all 0.3s ease;
       color: #fff;
       text-align: center;
+      font-family: 'MuyaoSoft', "SF Pro Display", "Microsoft YaHei", sans-serif;
     }
 
     .text-box {
@@ -163,7 +171,6 @@
   </div>
 
   <script>
-    // ✅ 修正移动端视口高度
     function setVh() {
       document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
     }
@@ -192,7 +199,6 @@
         this.radius = Math.random() * 2 + 1;
         this.speedY = Math.random() * 2 + 0.5;
         this.speedX = Math.random() * 1 - 0.5;
-        this.opacity = Math.random() * 0.7 + 0.3;
         this.blur = Math.random() * 10 + 10;
       }
       update() {
@@ -214,17 +220,15 @@
     function createSnowflakes(num) {
       for (let i = 0; i < num; i++) snowflakes.push(new Snowflake());
     }
-
     function animateSnow() {
       ctx.clearRect(0, 0, w, h);
       snowflakes.forEach(s => { s.update(); s.draw(); });
       requestAnimationFrame(animateSnow);
     }
-
     createSnowflakes(200);
     animateSnow();
 
-    // 🔐 登录验证
+    // 🔐 登录逻辑
     const PERMANENT_KEY = "123456";
     function generateRandomKey() {
       const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -238,7 +242,6 @@
     function verifyKey() {
       const input = document.getElementById("keyInput").value.trim();
       const hint = document.getElementById("hint");
-
       if (validKeys.includes(input)) {
         document.getElementById("login").style.display = "none";
         document.getElementById("diary").style.display = "block";
@@ -261,8 +264,9 @@
       if (diaryEntries.length === 0) return "";
       if (usedIndexes.length === diaryEntries.length) usedIndexes = [];
       let index;
-      do { index = Math.floor(Math.random() * diaryEntries.length); }
-      while (usedIndexes.includes(index));
+      do {
+        index = Math.floor(Math.random() * diaryEntries.length);
+      } while (usedIndexes.includes(index));
       usedIndexes.push(index);
       return diaryEntries[index];
     }
