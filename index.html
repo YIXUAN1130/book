@@ -166,12 +166,11 @@
     window.addEventListener('orientationchange', setVh);
     setVh();
 
-    // ❄️ 柔光梦幻雪花
+    // ❄️ 粒子簇状雪花动画
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     let w, h;
     const snowflakes = [];
-    const LAYERS = 3;
 
     function resize() {
       w = canvas.width = window.innerWidth;
@@ -181,39 +180,43 @@
     resize();
 
     class Snowflake {
-      constructor(layer) {
-        this.layer = layer;
-        this.reset();
-      }
+      constructor() { this.reset(); }
       reset() {
         this.x = Math.random() * w;
         this.y = Math.random() * h;
-        this.radius = Math.random() * (2.8 - this.layer * 0.6) + 0.8;
-        this.speedY = (Math.random() * 0.7 + 0.2) * (1 + this.layer * 0.3);
-        this.speedX = Math.random() * 0.6 - 0.3;
-        this.opacity = Math.random() * 0.7 + 0.3;
-        this.twinkle = Math.random() * Math.PI * 2;
+        this.size = Math.random() * 1.5 + 0.5;
+        this.speedY = Math.random() * 0.8 + 0.3;
+        this.speedX = Math.random() * 0.5 - 0.25;
+        this.opacity = Math.random() * 0.6 + 0.4;
+        this.angle = Math.random() * Math.PI * 2;
+        this.rotationSpeed = Math.random() * 0.002 + 0.001;
       }
       update() {
         this.y += this.speedY;
-        this.x += this.speedX + Math.sin(Date.now() / 1000 + this.twinkle) * 0.3;
-        if (this.y > h) this.reset(), this.y = -10;
+        this.x += this.speedX;
+        this.angle += this.rotationSpeed;
+        if (this.y > h) { this.reset(); this.y = -10; }
+        if (this.x > w) this.x = 0;
       }
       draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        const flicker = 0.5 + 0.5 * Math.sin(Date.now() / 800 + this.twinkle);
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = "white";
-        ctx.fillStyle = `rgba(255,255,255,${this.opacity * flicker})`;
-        ctx.fill();
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        for (let i = 0; i < 6; i++) {
+          const r = this.size * (Math.random() * 0.6 + 0.7);
+          ctx.beginPath();
+          ctx.arc(Math.cos(i) * 2, Math.sin(i) * 2, r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = "white";
+          ctx.fill();
+        }
+        ctx.restore();
       }
     }
 
     function createSnowflakes(num) {
-      for (let layer = 0; layer < LAYERS; layer++) {
-        for (let i = 0; i < num / LAYERS; i++) snowflakes.push(new Snowflake(layer));
-      }
+      for (let i = 0; i < num; i++) snowflakes.push(new Snowflake());
     }
 
     function animateSnow() {
@@ -222,7 +225,7 @@
       requestAnimationFrame(animateSnow);
     }
 
-    createSnowflakes(130);
+    createSnowflakes(180);
     animateSnow();
 
     // 🔐 登录逻辑
