@@ -7,7 +7,7 @@
   <style>
     :root { --vh: 100%; }
 
-    /* 💎 加载沐瑶软笔手写体 */
+    /* 💎 加载字体 */
     @font-face {
       font-family: 'MuyaoSoftbrush';
       src: url('./Muyao-Softbrush.ttf') format('truetype');
@@ -26,6 +26,7 @@
       align-items: center;
       flex-direction: column;
       color: white;
+      text-align: center;
     }
 
     canvas#snow {
@@ -46,14 +47,20 @@
       transition: all 0.3s ease;
     }
 
+    /* 🌙 登录界面 居中 */
     #login {
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 20px;
       padding: 40px 60px;
       text-align: center;
-      z-index: 10;
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
     }
 
     h1 {
@@ -62,7 +69,6 @@
       background: linear-gradient(120deg, #d5f2fb, #9fd8f5, #c8ebff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      font-family: 'MuyaoSoftbrush';
     }
 
     input {
@@ -78,16 +84,10 @@
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
       backdrop-filter: blur(25px);
       transition: all 0.3s ease;
-      font-family: 'MuyaoSoftbrush';
     }
 
     input::placeholder {
       color: rgba(255, 255, 255, 0.5);
-    }
-
-    input:focus {
-      background: rgba(213, 242, 251, 0.35);
-      box-shadow: 0 10px 50px rgba(213, 242, 251, 0.4);
     }
 
     button {
@@ -100,7 +100,6 @@
       cursor: pointer;
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
       transition: all 0.3s ease;
-      font-family: 'MuyaoSoftbrush';
     }
 
     button:hover {
@@ -108,23 +107,31 @@
       box-shadow: 0 10px 50px rgba(213, 242, 251, 0.5);
     }
 
-    .text-box, .diary-content {
+    /* 📖 日记界面整体居中 */
+    #diary {
+      display: none;
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .text-box {
+      padding: 25px 60px;
+      font-size: 26px;
+      font-weight: bold;
+      cursor: pointer;
       background: rgba(213, 242, 251, 0.2);
       border-radius: 25px;
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
       backdrop-filter: blur(25px);
       transition: all 0.3s ease;
       color: #fff;
-      text-align: center;
-      font-family: 'MuyaoSoftbrush';
-    }
-
-    .text-box {
-      margin-top: 50px;
-      padding: 25px 60px;
-      font-size: 26px;
-      font-weight: bold;
-      cursor: pointer;
     }
 
     .text-box:hover {
@@ -136,10 +143,14 @@
       display: none;
       margin-top: 30px;
       padding: 40px;
-      max-width: 80%;
+      max-width: 85%;
       font-size: 20px;
       line-height: 1.8;
       animation: fadeIn 1s ease;
+      background: rgba(213, 242, 251, 0.2);
+      border-radius: 25px;
+      box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
+      backdrop-filter: blur(25px);
     }
 
     .footer-tip {
@@ -147,7 +158,6 @@
       color: rgba(255,255,255,0.8);
       margin-top: 25px;
       font-style: italic;
-      font-family: 'MuyaoSoftbrush';
     }
 
     @keyframes fadeIn {
@@ -164,34 +174,30 @@
     <h1>请输入口令</h1>
     <input id="keyInput" placeholder="例如：A7K3F2" class="glass-box" />
     <button onclick="verifyKey()" class="glass-box">进入</button>
-    <p id="hint" style="color:#fff; margin-top:15px; font-family:'MuyaoSoftbrush';"></p>
+    <p id="hint" style="color:#fff; margin-top:15px;"></p>
   </div>
 
   <!-- 日记界面 -->
-  <div id="diary" style="display:none;">
+  <div id="diary">
     <div id="text" class="text-box">日記查詢₊˚‧🤍‧˚₊</div>
     <div id="content" class="diary-content"></div>
   </div>
 
   <script>
-    // 修正移动端高度
     function setVh() {
       document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
     }
     window.addEventListener('resize', setVh);
     setVh();
 
-    // ❄️ 发光雪花动画
+    // ❄️ 雪花动画
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     let w, h;
     const snowflakes = [];
     const SNOW_COUNT = 180;
 
-    function resize() {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-    }
+    function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
     window.addEventListener("resize", resize);
     resize();
 
@@ -244,9 +250,7 @@
       }
     }
 
-    function createSnowflakes() {
-      for (let i = 0; i < SNOW_COUNT; i++) snowflakes.push(new Snowflake());
-    }
+    function createSnowflakes() { for (let i = 0; i < SNOW_COUNT; i++) snowflakes.push(new Snowflake()); }
     function animate() {
       ctx.clearRect(0, 0, w, h);
       snowflakes.forEach(s => { s.update(); s.draw(ctx); });
@@ -271,7 +275,7 @@
       const hint = document.getElementById("hint");
       if (validKeys.includes(input)) {
         document.getElementById("login").style.display = "none";
-        document.getElementById("diary").style.display = "block";
+        document.getElementById("diary").style.display = "flex";
       } else {
         hint.textContent = "❌ 口令错误，请重新输入";
       }
@@ -324,4 +328,3 @@
   </script>
 </body>
 </html>
-
