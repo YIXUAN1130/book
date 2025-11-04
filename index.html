@@ -165,7 +165,7 @@
     window.addEventListener('resize', setVh);
     setVh();
 
-    // ❄️ 六角柔光雪花（旋转+摇摆）
+    // ❄️ 六角柔光雪花（无横向漂移，仅垂直飘落+旋转）
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     let w, h;
@@ -202,21 +202,14 @@
         this.x = Math.random() * w;
         this.y = Math.random() * h;
         this.size = Math.random() * 2 + 2;
-        this.speedY = Math.random() * 1 + 0.6;
-        this.speedX = Math.random() * 0.8 - 0.4;
-        this.angle = Math.random() * Math.PI * 2;
-        this.swingAmplitude = Math.random() * 1.5 + 0.5;
+        this.speedY = Math.random() * 1.2 + 0.8;
         this.rotation = Math.random() * Math.PI * 2;
         this.rotationSpeed = Math.random() * 0.02 - 0.01;
       }
       update() {
-        this.angle += 0.01;
-        this.x += Math.sin(this.angle) * this.swingAmplitude + this.speedX;
         this.y += this.speedY;
         this.rotation += this.rotationSpeed;
         if (this.y > h + 10) { this.y = -10; this.x = Math.random() * w; }
-        if (this.x > w) this.x = 0;
-        if (this.x < 0) this.x = w;
       }
       draw(ctx) {
         ctx.save();
