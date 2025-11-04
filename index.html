@@ -64,6 +64,9 @@
       background: linear-gradient(120deg, #d5f2fb, #9fd8f5, #c8ebff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+    }
+
+    input, button {
       font-family: 'MuyaoSoft', "SF Pro Display", "Microsoft YaHei", sans-serif;
     }
 
@@ -79,18 +82,11 @@
       border-radius: 25px;
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
       backdrop-filter: blur(25px);
-      -webkit-backdrop-filter: blur(25px);
       transition: all 0.3s ease;
-      font-family: 'MuyaoSoft', "SF Pro Display", "Microsoft YaHei", sans-serif;
     }
 
     input::placeholder {
       color: rgba(255,255,255,0.6);
-    }
-
-    input:focus {
-      background: rgba(213, 242, 251, 0.35);
-      box-shadow: 0 10px 50px rgba(213, 242, 251, 0.4);
     }
 
     button {
@@ -104,7 +100,6 @@
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
       transition: all 0.3s ease;
       backdrop-filter: blur(25px);
-      font-family: 'MuyaoSoft', "SF Pro Display", "Microsoft YaHei", sans-serif;
     }
 
     button:hover {
@@ -112,20 +107,28 @@
       box-shadow: 0 10px 50px rgba(213, 242, 251, 0.5);
     }
 
+    #diary {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      top: -5vh; /* ✅ 视觉略微上移 */
+    }
+
     .text-box, .diary-content {
       background: rgba(213, 242, 251, 0.2);
       border-radius: 25px;
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
       backdrop-filter: blur(25px);
-      -webkit-backdrop-filter: blur(25px);
-      transition: all 0.3s ease;
       color: #fff;
       text-align: center;
-      font-family: 'MuyaoSoft', "SF Pro Display", "Microsoft YaHei", sans-serif;
+      margin: 0 auto;
+      position: relative;
+      transition: all 0.3s ease;
     }
 
     .text-box {
-      margin-top: 50px;
       padding: 25px 60px;
       font-size: 26px;
       font-weight: bold;
@@ -139,7 +142,6 @@
 
     .diary-content {
       display: none;
-      margin-top: 30px;
       padding: 40px;
       max-width: 80%;
       font-size: 20px;
@@ -171,6 +173,7 @@
   </div>
 
   <script>
+    // ✅ 动态视窗高度
     function setVh() {
       document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
     }
@@ -178,7 +181,7 @@
     window.addEventListener('orientationchange', setVh);
     setVh();
 
-    // ❄️ 发光雪花动画（200个）
+    // ❄️ 发光雪花动画
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     let w, h;
@@ -244,7 +247,7 @@
       const hint = document.getElementById("hint");
       if (validKeys.includes(input)) {
         document.getElementById("login").style.display = "none";
-        document.getElementById("diary").style.display = "block";
+        document.getElementById("diary").style.display = "flex";
       } else {
         hint.textContent = "❌ 口令错误，请重新输入";
       }
@@ -252,9 +255,9 @@
 
     // 🌙 日记逻辑
     function getRandomDate() {
-      const month = Math.floor(Math.random() * 12) + 1;
-      const day = Math.floor(Math.random() * 28) + 1;
-      return `${month.toString().padStart(2, '0')}月${day.toString().padStart(2, '0')}日`;
+      const m = Math.floor(Math.random() * 12) + 1;
+      const d = Math.floor(Math.random() * 28) + 1;
+      return `${m.toString().padStart(2, '0')}月${d.toString().padStart(2, '0')}日`;
     }
 
     let diaryEntries = [];
@@ -263,12 +266,12 @@
     function getRandomEntryNoRepeat() {
       if (diaryEntries.length === 0) return "";
       if (usedIndexes.length === diaryEntries.length) usedIndexes = [];
-      let index;
+      let i;
       do {
-        index = Math.floor(Math.random() * diaryEntries.length);
-      } while (usedIndexes.includes(index));
-      usedIndexes.push(index);
-      return diaryEntries[index];
+        i = Math.floor(Math.random() * diaryEntries.length);
+      } while (usedIndexes.includes(i));
+      usedIndexes.push(i);
+      return diaryEntries[i];
     }
 
     async function loadDiaries() {
@@ -284,9 +287,9 @@
     document.getElementById("text").addEventListener("click", async () => {
       if (diaryEntries.length === 0) await loadDiaries();
       if (diaryEntries.length > 0) {
-        const randomEntry = getRandomEntryNoRepeat();
-        const randomDate = getRandomDate();
-        document.getElementById("content").innerHTML = `<h2>🌙 ${randomDate} 的白月光日记</h2><p>${randomEntry}</p>`;
+        const entry = getRandomEntryNoRepeat();
+        const date = getRandomDate();
+        document.getElementById("content").innerHTML = `<h2>🌙 ${date} 的白月光日记</h2><p>${entry}</p>`;
       }
       document.getElementById("text").style.display = "none";
       document.getElementById("content").style.display = "block";
