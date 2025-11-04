@@ -5,13 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>夢占日記本</title>
   <style>
-    /* ✅ 导入沐瑶软笔手写体 */
-    @font-face {
-      font-family: 'MuyaoSoft';
-      src: url('./Muyao-Softbrush.ttf') format('truetype');
-      font-display: swap;
-    }
-
     :root {
       --vh: 100%;
     }
@@ -21,7 +14,7 @@
       height: calc(var(--vh, 1vh) * 100);
       overflow: hidden;
       background-color: #000;
-      font-family: 'MuyaoSoft', "SF Pro Display", "Microsoft YaHei", sans-serif;
+      font-family: "Microsoft YaHei", "SF Pro Display", sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -66,10 +59,6 @@
       -webkit-text-fill-color: transparent;
     }
 
-    input, button {
-      font-family: 'MuyaoSoft', "SF Pro Display", "Microsoft YaHei", sans-serif;
-    }
-
     input {
       width: 220px;
       padding: 12px 18px;
@@ -82,11 +71,13 @@
       border-radius: 25px;
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
       backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
       transition: all 0.3s ease;
     }
 
-    input::placeholder {
-      color: rgba(255,255,255,0.6);
+    input:focus {
+      background: rgba(213, 242, 251, 0.35);
+      box-shadow: 0 10px 50px rgba(213, 242, 251, 0.4);
     }
 
     button {
@@ -107,28 +98,19 @@
       box-shadow: 0 10px 50px rgba(213, 242, 251, 0.5);
     }
 
-    #diary {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-      top: -5vh; /* ✅ 视觉略微上移 */
-    }
-
     .text-box, .diary-content {
       background: rgba(213, 242, 251, 0.2);
       border-radius: 25px;
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
       backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      transition: all 0.3s ease;
       color: #fff;
       text-align: center;
-      margin: 0 auto;
-      position: relative;
-      transition: all 0.3s ease;
     }
 
     .text-box {
+      margin-top: 50px;
       padding: 25px 60px;
       font-size: 26px;
       font-weight: bold;
@@ -142,6 +124,7 @@
 
     .diary-content {
       display: none;
+      margin-top: 30px;
       padding: 40px;
       max-width: 80%;
       font-size: 20px;
@@ -167,25 +150,25 @@
   </div>
 
   <!-- 日记界面 -->
-  <div id="diary" style="display:none; text-align:center;">
+  <div id="diary" style="display:none;">
     <div id="text" class="text-box">日記查詢₊˚‧🤍‧˚₊</div>
     <div id="content" class="diary-content"></div>
   </div>
 
   <script>
-    // ✅ 动态视窗高度
+    // 修正移动端高度
     function setVh() {
       document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
     }
     window.addEventListener('resize', setVh);
-    window.addEventListener('orientationchange', setVh);
     setVh();
 
-    // ❄️ 发光雪花动画
+    // ❄️ 发光六角雪花动画
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     let w, h;
     const snowflakes = [];
+    const SNOW_COUNT = 180;
 
     function resize() {
       w = canvas.width = window.innerWidth;
@@ -194,42 +177,73 @@
     window.addEventListener("resize", resize);
     resize();
 
+    function drawSnowflake(ctx, size, rotation, glow) {
+      ctx.save();
+      ctx.rotate(rotation);
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        ctx.moveTo(0, 0);
+        ctx.lineTo(size, 0);
+        ctx.translate(size, 0);
+        ctx.rotate(Math.PI / 3);
+        ctx.lineTo(-size, 0);
+        ctx.rotate(Math.PI / 3);
+        ctx.translate(-size, 0);
+      }
+      ctx.shadowBlur = glow;
+      ctx.shadowColor = "white";
+      ctx.strokeStyle = "rgba(255,255,255,0.9)";
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.restore();
+    }
+
     class Snowflake {
       constructor() { this.reset(); }
       reset() {
         this.x = Math.random() * w;
         this.y = Math.random() * h;
-        this.radius = Math.random() * 2 + 1;
-        this.speedY = Math.random() * 2 + 0.5;
-        this.speedX = Math.random() * 1 - 0.5;
-        this.blur = Math.random() * 10 + 10;
+        this.size = Math.random() * 3 + 2;
+        this.speedY = Math.random() * 1.5 + 0.5;
+        this.speedX = Math.random() * 0.5 - 0.25;
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotationSpeed = Math.random() * 0.02 - 0.01;
+        this.glow = Math.random() * 10 + 8;
       }
       update() {
         this.y += this.speedY;
         this.x += this.speedX;
-        if (this.y > h) this.reset(), this.y = -10;
+        this.rotation += this.rotationSpeed;
+        if (this.y > h + 10) {
+          this.y = -10;
+          this.x = Math.random() * w;
+        }
         if (this.x > w) this.x = 0;
+        if (this.x < 0) this.x = w;
       }
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.shadowColor = "rgba(255,255,255,1)";
-        ctx.shadowBlur = this.blur;
-        ctx.fillStyle = "rgba(255,255,255,1)";
-        ctx.fill();
+      draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        drawSnowflake(ctx, this.size, this.rotation, this.glow);
+        ctx.restore();
       }
     }
 
-    function createSnowflakes(num) {
-      for (let i = 0; i < num; i++) snowflakes.push(new Snowflake());
+    function createSnowflakes() {
+      for (let i = 0; i < SNOW_COUNT; i++) snowflakes.push(new Snowflake());
     }
-    function animateSnow() {
+
+    function animate() {
       ctx.clearRect(0, 0, w, h);
-      snowflakes.forEach(s => { s.update(); s.draw(); });
-      requestAnimationFrame(animateSnow);
+      snowflakes.forEach(s => {
+        s.update();
+        s.draw(ctx);
+      });
+      requestAnimationFrame(animate);
     }
-    createSnowflakes(200);
-    animateSnow();
+
+    createSnowflakes();
+    animate();
 
     // 🔐 登录逻辑
     const PERMANENT_KEY = "123456";
@@ -247,31 +261,34 @@
       const hint = document.getElementById("hint");
       if (validKeys.includes(input)) {
         document.getElementById("login").style.display = "none";
-        document.getElementById("diary").style.display = "flex";
+        document.getElementById("diary").style.display = "block";
       } else {
         hint.textContent = "❌ 口令错误，请重新输入";
       }
     }
 
-    // 🌙 日记逻辑
-    function getRandomDate() {
-      const m = Math.floor(Math.random() * 12) + 1;
-      const d = Math.floor(Math.random() * 28) + 1;
-      return `${m.toString().padStart(2, '0')}月${d.toString().padStart(2, '0')}日`;
+    // 📅 实时日期
+    function getCurrentDate() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = (now.getMonth() + 1).toString().padStart(2, '0');
+      const day = now.getDate().toString().padStart(2, '0');
+      return `${year}年${month}月${day}日`;
     }
 
+    // 🌙 日记逻辑
     let diaryEntries = [];
     let usedIndexes = [];
 
     function getRandomEntryNoRepeat() {
       if (diaryEntries.length === 0) return "";
       if (usedIndexes.length === diaryEntries.length) usedIndexes = [];
-      let i;
+      let index;
       do {
-        i = Math.floor(Math.random() * diaryEntries.length);
-      } while (usedIndexes.includes(i));
-      usedIndexes.push(i);
-      return diaryEntries[i];
+        index = Math.floor(Math.random() * diaryEntries.length);
+      } while (usedIndexes.includes(index));
+      usedIndexes.push(index);
+      return diaryEntries[index];
     }
 
     async function loadDiaries() {
@@ -287,9 +304,9 @@
     document.getElementById("text").addEventListener("click", async () => {
       if (diaryEntries.length === 0) await loadDiaries();
       if (diaryEntries.length > 0) {
-        const entry = getRandomEntryNoRepeat();
-        const date = getRandomDate();
-        document.getElementById("content").innerHTML = `<h2>🌙 ${date} 的白月光日记</h2><p>${entry}</p>`;
+        const randomEntry = getRandomEntryNoRepeat();
+        const currentDate = getCurrentDate();
+        document.getElementById("content").innerHTML = `<h2>🌙 ${currentDate} 的日记</h2><p>${randomEntry}</p>`;
       }
       document.getElementById("text").style.display = "none";
       document.getElementById("content").style.display = "block";
