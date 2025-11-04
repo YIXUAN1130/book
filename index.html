@@ -5,26 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>夢占日記本</title>
   <style>
-    :root { --vh: 100%; }
+    /* ✅ 加入沐瑶软笔手写体 */
+    @font-face {
+      font-family: 'MuyaoSoft';
+      src: url('./Muyao-Softbrush.ttf') format('truetype');
+      font-display: swap;
+    }
+
+    :root {
+      --vh: 100%;
+    }
 
     body {
       margin: 0;
       height: calc(var(--vh, 1vh) * 100);
       overflow: hidden;
       background-color: #000;
-      font-family: "SF Pro Display", "Microsoft YaHei", sans-serif;
+      font-family: 'MuyaoSoft', "SF Pro Display", "Microsoft YaHei", sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
       flex-direction: column;
       color: white;
-      opacity: 0;
-      animation: fadeInBody 2.5s ease forwards;
-    }
-
-    @keyframes fadeInBody {
-      from { opacity: 0; }
-      to { opacity: 1; }
     }
 
     canvas#snow {
@@ -37,7 +39,7 @@
     }
 
     .glass-box {
-      background: rgba(213, 242, 251, 0.25);
+      background: rgba(213, 242, 251, 0.2);
       backdrop-filter: blur(25px) saturate(180%);
       -webkit-backdrop-filter: blur(25px) saturate(180%);
       border: none;
@@ -72,7 +74,7 @@
       outline: none;
       text-align: center;
       color: #fff;
-      background: rgba(213, 242, 251, 0.25);
+      background: rgba(213, 242, 251, 0.2);
       border-radius: 25px;
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
       backdrop-filter: blur(25px);
@@ -81,7 +83,7 @@
     }
 
     input:focus {
-      background: rgba(213, 242, 251, 0.4);
+      background: rgba(213, 242, 251, 0.35);
       box-shadow: 0 10px 50px rgba(213, 242, 251, 0.4);
     }
 
@@ -90,7 +92,7 @@
       font-size: 18px;
       border: none;
       border-radius: 25px;
-      background: rgba(213, 242, 251, 0.25);
+      background: rgba(213, 242, 251, 0.2);
       color: #fff;
       cursor: pointer;
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
@@ -104,13 +106,14 @@
     }
 
     .text-box, .diary-content {
-      background: rgba(213, 242, 251, 0.25);
+      background: rgba(213, 242, 251, 0.2);
       border-radius: 25px;
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
       backdrop-filter: blur(25px);
       -webkit-backdrop-filter: blur(25px);
       transition: all 0.3s ease;
       color: #fff;
+      text-align: center;
     }
 
     .text-box {
@@ -145,6 +148,7 @@
 <body>
   <canvas id="snow"></canvas>
 
+  <!-- 登录界面 -->
   <div id="login">
     <h1>请输入口令</h1>
     <input id="keyInput" placeholder="例如：A7K3F2" class="glass-box" />
@@ -152,13 +156,14 @@
     <p id="hint" style="color:#fff; margin-top:15px;"></p>
   </div>
 
+  <!-- 日记界面 -->
   <div id="diary" style="display:none; text-align:center;">
     <div id="text" class="text-box">日記查詢₊˚‧🤍‧˚₊</div>
     <div id="content" class="diary-content"></div>
   </div>
 
   <script>
-    // ✅ 移动端高度适配
+    // ✅ 修正移动端视口高度
     function setVh() {
       document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
     }
@@ -166,7 +171,7 @@
     window.addEventListener('orientationchange', setVh);
     setVh();
 
-    // ❄️ 粒子簇状雪花动画
+    // ❄️ 发光雪花动画（200个）
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     let w, h;
@@ -184,34 +189,25 @@
       reset() {
         this.x = Math.random() * w;
         this.y = Math.random() * h;
-        this.size = Math.random() * 1.5 + 0.5;
-        this.speedY = Math.random() * 0.8 + 0.3;
-        this.speedX = Math.random() * 0.5 - 0.25;
-        this.opacity = Math.random() * 0.6 + 0.4;
-        this.angle = Math.random() * Math.PI * 2;
-        this.rotationSpeed = Math.random() * 0.002 + 0.001;
+        this.radius = Math.random() * 2 + 1;
+        this.speedY = Math.random() * 2 + 0.5;
+        this.speedX = Math.random() * 1 - 0.5;
+        this.opacity = Math.random() * 0.7 + 0.3;
+        this.blur = Math.random() * 10 + 10;
       }
       update() {
         this.y += this.speedY;
         this.x += this.speedX;
-        this.angle += this.rotationSpeed;
-        if (this.y > h) { this.reset(); this.y = -10; }
+        if (this.y > h) this.reset(), this.y = -10;
         if (this.x > w) this.x = 0;
       }
       draw() {
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.rotate(this.angle);
-        for (let i = 0; i < 6; i++) {
-          const r = this.size * (Math.random() * 0.6 + 0.7);
-          ctx.beginPath();
-          ctx.arc(Math.cos(i) * 2, Math.sin(i) * 2, r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = "white";
-          ctx.fill();
-        }
-        ctx.restore();
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.shadowColor = "rgba(255,255,255,1)";
+        ctx.shadowBlur = this.blur;
+        ctx.fillStyle = "rgba(255,255,255,1)";
+        ctx.fill();
       }
     }
 
@@ -225,10 +221,10 @@
       requestAnimationFrame(animateSnow);
     }
 
-    createSnowflakes(180);
+    createSnowflakes(200);
     animateSnow();
 
-    // 🔐 登录逻辑
+    // 🔐 登录验证
     const PERMANENT_KEY = "123456";
     function generateRandomKey() {
       const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -242,6 +238,7 @@
     function verifyKey() {
       const input = document.getElementById("keyInput").value.trim();
       const hint = document.getElementById("hint");
+
       if (validKeys.includes(input)) {
         document.getElementById("login").style.display = "none";
         document.getElementById("diary").style.display = "block";
@@ -250,7 +247,7 @@
       }
     }
 
-    // 🌙 随机日记 + 不重复抽取
+    // 🌙 日记逻辑
     function getRandomDate() {
       const month = Math.floor(Math.random() * 12) + 1;
       const day = Math.floor(Math.random() * 28) + 1;
