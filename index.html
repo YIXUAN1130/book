@@ -17,6 +17,10 @@
       height: calc(var(--vh, 1vh) * 100);
       overflow: hidden;
       background: #000;
+      background-image: url('雪.gif');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
       font-family: 'MuyaoSoftbrush', 'Microsoft YaHei', sans-serif;
       color: white;
       display: flex;
@@ -24,14 +28,6 @@
       align-items: center;
       flex-direction: column;
       text-align: center;
-    }
-
-    canvas#snow {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      z-index: -1;
-      pointer-events: none;
     }
 
     #login, #diary {
@@ -43,6 +39,7 @@
       justify-content: center;
       align-items: center;
       font-family: 'MuyaoSoftbrush';
+      backdrop-filter: blur(0px);
     }
 
     h1, input, button, p, .text-box, .footer-tip {
@@ -137,8 +134,6 @@
   </style>
 </head>
 <body>
-  <canvas id="snow"></canvas>
-
   <!-- 登录界面 -->
   <div id="login">
     <h1>请输入口令</h1>
@@ -149,7 +144,7 @@
 
   <!-- 日记界面 -->
   <div id="diary" style="display:none;">
-    <div id="text" class="text-box">日记查询₊˚‧🤍‧˚₊</div>
+    <div id="text" class="text-box">日記查詢₊˚‧🤍‧˚₊</div>
   </div>
 
   <script>
@@ -159,75 +154,6 @@
     }
     window.addEventListener('resize', setVh);
     setVh();
-
-    // ❄️ 柔光六角雪花
-    const canvas = document.getElementById("snow");
-    const ctx = canvas.getContext("2d");
-    let w, h;
-    const snowflakes = [];
-    const SNOW_COUNT = 180;
-
-    function resize() {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-    }
-    window.addEventListener("resize", resize);
-    resize();
-
-    function drawSnowflake(ctx, size, rotation, alpha) {
-      ctx.save();
-      ctx.rotate(rotation);
-      ctx.beginPath();
-      for (let i = 0; i < 6; i++) {
-        ctx.moveTo(0, 0);
-        ctx.lineTo(size, 0);
-        ctx.rotate(Math.PI / 3);
-      }
-      ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = "rgba(255,255,255,0.9)";
-      ctx.lineWidth = 1.1;
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    class Snowflake {
-      constructor() { this.reset(); }
-      reset() {
-        this.x = Math.random() * w;
-        this.y = Math.random() * h - h;
-        this.size = Math.random() * 2 + 1.5;
-        this.speedY = Math.random() * 1.2 + 0.8;
-        this.swing = Math.random() * 1.5;
-        this.angle = Math.random() * Math.PI * 2;
-        this.alpha = Math.random() * 0.6 + 0.4;
-        this.rotation = Math.random() * Math.PI * 2;
-        this.rotationSpeed = Math.random() * 0.02 - 0.01;
-      }
-      update() {
-        this.y += this.speedY;
-        this.angle += 0.01;
-        this.x += Math.sin(this.angle) * this.swing * 0.05;
-        this.rotation += this.rotationSpeed;
-        if (this.y > h + 5) {
-          this.y = -10;
-          this.x = Math.random() * w;
-        }
-      }
-      draw(ctx) {
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        drawSnowflake(ctx, this.size * 2.5, this.rotation, this.alpha);
-        ctx.restore();
-      }
-    }
-
-    for (let i = 0; i < SNOW_COUNT; i++) snowflakes.push(new Snowflake());
-    (function animate() {
-      ctx.clearRect(0, 0, w, h);
-      snowflakes.forEach(s => { s.update(); s.draw(ctx); });
-      requestAnimationFrame(animate);
-    })();
 
     // 🔐 登录逻辑
     const PERMANENT_KEY = "123456";
@@ -279,4 +205,3 @@
   </script>
 </body>
 </html>
-
