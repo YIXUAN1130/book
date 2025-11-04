@@ -45,7 +45,7 @@
       font-family: 'MuyaoSoftbrush';
     }
 
-    h1, input, button, p, .text-box, .diary-content, .footer-tip {
+    h1, input, button, p, .text-box, .footer-tip {
       font-family: 'MuyaoSoftbrush' !important;
     }
 
@@ -106,8 +106,7 @@
       transition: all 0.3s ease;
     }
 
-    .diary-content {
-      display: none;
+    .diary-card {
       margin-top: 30px;
       padding: 40px;
       max-width: 85%;
@@ -151,18 +150,17 @@
   <!-- 日记界面 -->
   <div id="diary" style="display:none;">
     <div id="text" class="text-box">日記查詢₊˚‧🤍‧˚₊</div>
-    <div id="content" class="diary-content"></div>
   </div>
 
   <script>
-    // 修正视口高度
+    // 自适应高度
     function setVh() {
       document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
     }
     window.addEventListener('resize', setVh);
     setVh();
 
-    // ❄️ 自然柔和六角雪花
+    // ❄️ 柔光六角雪花
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     let w, h;
@@ -200,7 +198,7 @@
         this.y = Math.random() * h - h;
         this.size = Math.random() * 2 + 1.5;
         this.speedY = Math.random() * 1.2 + 0.8;
-        this.swing = Math.random() * 1.5; // 轻微左右摆动
+        this.swing = Math.random() * 1.5;
         this.angle = Math.random() * Math.PI * 2;
         this.alpha = Math.random() * 0.6 + 0.4;
         this.rotation = Math.random() * Math.PI * 2;
@@ -208,7 +206,7 @@
       }
       update() {
         this.y += this.speedY;
-        this.angle += 0.01; // 自然左右轻微浮动
+        this.angle += 0.01;
         this.x += Math.sin(this.angle) * this.swing * 0.05;
         this.rotation += this.rotationSpeed;
         if (this.y > h + 5) {
@@ -258,7 +256,10 @@
         const data = await res.json();
         diaryEntries = data.entries;
       } catch {
-        document.getElementById("content").innerHTML = "<p>⚠️ 无法加载文库内容，请检查链接。</p>";
+        const diaryBox = document.createElement("div");
+        diaryBox.className = "diary-card";
+        diaryBox.innerHTML = "<p>⚠️ 无法加载文库内容，请检查链接。</p>";
+        document.getElementById("diary").appendChild(diaryBox);
       }
     }
 
@@ -267,11 +268,13 @@
       if (diaryEntries.length > 0) {
         const randomEntry = diaryEntries[Math.floor(Math.random() * diaryEntries.length)];
         const currentDate = getCurrentDate();
-        document.getElementById("content").innerHTML =
+        const diaryBox = document.createElement("div");
+        diaryBox.className = "diary-card";
+        diaryBox.innerHTML =
           `<h2>🌙 ${currentDate}</h2><p>${randomEntry}</p><div class='footer-tip'>让幸福具像化，截图可以留念～</div>`;
+        document.getElementById("text").style.display = "none";
+        document.getElementById("diary").appendChild(diaryBox);
       }
-      document.getElementById("text").style.display = "none";
-      document.getElementById("content").style.display = "flex";
     });
   </script>
 </body>
