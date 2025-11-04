@@ -13,7 +13,8 @@
       margin: 0;
       height: calc(var(--vh, 1vh) * 100);
       overflow: hidden;
-      background-color: #000;
+      background: url('bg.gif') no-repeat center center fixed;
+      background-size: cover;
       font-family: "SF Pro Display", "Microsoft YaHei", sans-serif;
       display: flex;
       justify-content: center;
@@ -22,17 +23,8 @@
       color: white;
     }
 
-    canvas#snow {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-    }
-
     .glass-box {
-      background: rgba(213, 242, 251, 0.2);
+      background: rgba(213, 242, 251, 0.25);
       backdrop-filter: blur(25px) saturate(180%);
       -webkit-backdrop-filter: blur(25px) saturate(180%);
       border: none;
@@ -67,7 +59,7 @@
       outline: none;
       text-align: center;
       color: #fff;
-      background: rgba(213, 242, 251, 0.2);
+      background: rgba(213, 242, 251, 0.25);
       border-radius: 25px;
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
       backdrop-filter: blur(25px);
@@ -76,7 +68,7 @@
     }
 
     input:focus {
-      background: rgba(213, 242, 251, 0.35);
+      background: rgba(213, 242, 251, 0.4);
       box-shadow: 0 10px 50px rgba(213, 242, 251, 0.4);
     }
 
@@ -85,7 +77,7 @@
       font-size: 18px;
       border: none;
       border-radius: 25px;
-      background: rgba(213, 242, 251, 0.2);
+      background: rgba(213, 242, 251, 0.25);
       color: #fff;
       cursor: pointer;
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
@@ -99,7 +91,7 @@
     }
 
     .text-box, .diary-content {
-      background: rgba(213, 242, 251, 0.2);
+      background: rgba(213, 242, 251, 0.25);
       border-radius: 25px;
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
       backdrop-filter: blur(25px);
@@ -138,8 +130,6 @@
   </style>
 </head>
 <body>
-  <canvas id="snow"></canvas>
-
   <!-- 登录界面 -->
   <div id="login">
     <h1>请输入口令</h1>
@@ -155,6 +145,7 @@
   </div>
 
   <script>
+    // ✅ 适配移动端
     function setVh() {
       document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
     }
@@ -162,53 +153,7 @@
     window.addEventListener('orientationchange', setVh);
     setVh();
 
-    const canvas = document.getElementById("snow");
-    const ctx = canvas.getContext("2d");
-    let w, h;
-    const snowflakes = [];
-
-    function resize() {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-    }
-    window.addEventListener("resize", resize);
-    resize();
-
-    class Snowflake {
-      constructor() { this.reset(); }
-      reset() {
-        this.x = Math.random() * w;
-        this.y = Math.random() * h;
-        this.radius = Math.random() * 3 + 1;
-        this.speedY = Math.random() * 3 + 1;
-        this.speedX = Math.random() * 1 - 0.5;
-        this.opacity = Math.random() * 0.8 + 0.2;
-      }
-      update() {
-        this.y += this.speedY;
-        this.x += this.speedX;
-        if (this.y > h) this.reset(), this.y = -10;
-        if (this.x > w) this.x = 0;
-      }
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
-        ctx.fill();
-      }
-    }
-
-    function createSnowflakes(num) {
-      for (let i = 0; i < num; i++) snowflakes.push(new Snowflake());
-    }
-    function animateSnow() {
-      ctx.clearRect(0, 0, w, h);
-      snowflakes.forEach(s => { s.update(); s.draw(); });
-      requestAnimationFrame(animateSnow);
-    }
-    createSnowflakes(240);
-    animateSnow();
-
+    // 🔐 固定管理员口令 + 随机生成
     const PERMANENT_KEY = "123456";
     function generateRandomKey() {
       const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -231,7 +176,7 @@
       }
     }
 
-    // 🌙 日记逻辑（随机日期标题 + 不重复抽取）
+    // 🌙 日记逻辑（随机日期 + 不重复抽取）
     function getRandomDate() {
       const month = Math.floor(Math.random() * 12) + 1;
       const day = Math.floor(Math.random() * 28) + 1;
@@ -275,4 +220,3 @@
   </script>
 </body>
 </html>
-
