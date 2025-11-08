@@ -156,7 +156,7 @@
     window.addEventListener('resize', setVh);
     setVh();
 
-    // ❄️ 使用001版本的雪花代码
+    // ❄️ 雪花动画
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     let w, h;
@@ -204,19 +204,41 @@
       snowflakes.forEach(s => { s.update(); s.draw(ctx); });
       requestAnimationFrame(animate);
     }
-
     animate();
 
-    // 🔐 登录逻辑
-    const PERMANENT_KEY = "123456";
+    // 🔐 登录逻辑（带1小时免登录）
+    const PERMANENT_KEY = "STAR17";  // 可修改口令
+    const LOGIN_EXPIRY_HOURS = 1;    // 免登录时间（小时）
+
+    function checkLoginStatus() {
+      const savedTime = localStorage.getItem("lastLoginTime");
+      if (savedTime) {
+        const now = Date.now();
+        const diffHours = (now - parseInt(savedTime, 10)) / (1000 * 60 * 60);
+        if (diffHours < LOGIN_EXPIRY_HOURS) {
+          document.getElementById("login").style.display = "none";
+          document.getElementById("diary").style.display = "flex";
+          return true;
+        } else {
+          localStorage.removeItem("lastLoginTime");
+        }
+      }
+      return false;
+    }
+
     function verifyKey() {
       const input = document.getElementById("keyInput").value.trim();
       const hint = document.getElementById("hint");
       if (input === PERMANENT_KEY) {
+        localStorage.setItem("lastLoginTime", Date.now().toString());
         document.getElementById("login").style.display = "none";
         document.getElementById("diary").style.display = "flex";
-      } else hint.textContent = "❌ 口令错误，请重新输入";
+      } else {
+        hint.textContent = "❌ 口令错误，请重新输入";
+      }
     }
+
+    window.addEventListener("DOMContentLoaded", checkLoginStatus);
 
     // 📅 日期
     function getCurrentDate() {
