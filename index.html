@@ -251,7 +251,7 @@
 
     async function loadDiaries() {
       try {
-        const res = await fetch("https://yixuan1130.github.io/diary_date.json");
+        const res = await fetch("https://bairixiaoyu.xyz/diary_date.json");
         const data = await res.json();
         diaryEntries = data.entries;
         shufflePool = shuffle([...diaryEntries]);
@@ -292,3 +292,4 @@
   </script>
 </body>
 </html>
+
