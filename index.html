@@ -217,10 +217,11 @@ function verifyKey(){
   }
 }
 
-/* ---------------- 加载文案（不会重复执行） ---------------- */
+/* ---------------- 加载文案（从你的域名读取） ---------------- */
 let diaryEntries = [];
 let loadPromise = null;
-const JSON_URL = "https://yixuan1130.github.io/book/diary_date.json";
+
+const JSON_URL = "https://bairixiaoyu.xyz/diary_date.json";  // ← 已全部改为你的域名
 
 function loadDiaries(){
   if(loadPromise) return loadPromise;
@@ -238,7 +239,7 @@ function loadDiaries(){
   return loadPromise;
 }
 
-/* ---------------- 随机池 ---------------- */
+/* ---------------- 随机池（不重复） ---------------- */
 function initPool(){
   const all = [...diaryEntries.keys()];
   localStorage.setItem("remainingIdx", JSON.stringify(all));
@@ -258,7 +259,7 @@ function savePools(r,u){
   localStorage.setItem("usedIdx", JSON.stringify(u));
 }
 
-/* ---------------- 抽取文案 ---------------- */
+/* ---------------- 抽文案 ---------------- */
 let clicking = false;
 
 document.getElementById("text").addEventListener("click", async ()=>{
@@ -301,5 +302,6 @@ document.getElementById("text").addEventListener("click", async ()=>{
   clicking = false;
 });
 </script>
+
 </body>
 </html>
