@@ -134,6 +134,7 @@
     }
   </style>
 </head>
+
 <body>
   <canvas id="snow"></canvas>
 
@@ -149,12 +150,18 @@
   </div>
 
   <script>
+    /**********************
+     * 自适应高度
+     **********************/
     function setVh() {
       document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
     }
     window.addEventListener('resize', setVh);
     setVh();
 
+    /**********************
+     * 雪花动画
+     **********************/
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     let w, h;
@@ -191,7 +198,9 @@
         ctx.fill();
       }
     }
+
     for (let i = 0; i < SNOW_COUNT; i++) snowflakes.push(new Snowflake());
+
     function animate() {
       ctx.clearRect(0, 0, w, h);
       snowflakes.forEach(s => { s.update(); s.draw(ctx); });
@@ -199,14 +208,16 @@
     }
     animate();
 
-    // 登录系统
+    /**********************
+     * 登录系统
+     **********************/
     const PERMANENT_KEY = "STAR17";
     const LOGIN_EXPIRY_HOURS = 1;
 
     function checkLoginStatus() {
-      const savedTime = localStorage.getItem("lastLoginTime");
-      if (savedTime) {
-        const diff = (Date.now() - parseInt(savedTime, 10)) / (1000 * 60 * 60);
+      const saved = localStorage.getItem("lastLoginTime");
+      if (saved) {
+        const diff = (Date.now() - parseInt(saved, 10)) / (1000 * 60 * 60);
         if (diff < LOGIN_EXPIRY_HOURS) {
           document.getElementById("login").style.display = "none";
           document.getElementById("diary").style.display = "flex";
@@ -227,19 +238,15 @@
         hint.textContent = "❌ 口令错误，请重新输入";
       }
     }
+
     window.addEventListener("DOMContentLoaded", checkLoginStatus);
 
-    // 获取日期
-    function getCurrentDate() {
-      const now = new Date();
-      const m = String(now.getMonth() + 1).padStart(2, "0");
-      const d = String(now.getDate()).padStart(2, "0");
-      return `${m}月${d}日`;
-    }
-
-    // 文库与随机池
+    /**********************
+     * 文库逻辑（无重复池）
+     **********************/
     let diaryEntries = [];
     let shufflePool = [];
+    let diariesLoaded = false;  // ❗阻止二次初始化
 
     function shuffle(arr) {
       for (let i = arr.length - 1; i > 0; i--) {
@@ -250,11 +257,16 @@
     }
 
     async function loadDiaries() {
+      if (diariesLoaded) return;  // ❗防止重复执行
+      diariesLoaded = true;
+
       try {
         const res = await fetch("https://bairixiaoyu.xyz/diary_date.json");
         const data = await res.json();
-        diaryEntries = data.entries;
+
+        diaryEntries = [...new Set(data.entries)];
         shufflePool = shuffle([...diaryEntries]);
+
       } catch {
         showError("⚠️ 无法加载文库内容，请检查链接。");
       }
@@ -268,27 +280,30 @@
     }
 
     document.getElementById("text").addEventListener("click", async () => {
-      if (diaryEntries.length === 0) await loadDiaries();
 
-      if (shufflePool.length === 0 && diaryEntries.length > 0) {
-        shufflePool = shuffle([...diaryEntries]);
+      await loadDiaries(); // 不再多重初始化
+
+      if (shufflePool.length === 0) {
+        shufflePool = shuffle([...diaryEntries]); // 第二轮开始
       }
 
-      if (shufflePool.length > 0) {
-        const entry = shufflePool.pop();
-        const date = getCurrentDate();
+      const entry = shufflePool.pop();
+      const date = (() => {
+        const now = new Date();
+        return `${String(now.getMonth() + 1).padStart(2,'0')}月${String(now.getDate()).padStart(2,'0')}日`;
+      })();
 
-        const box = document.createElement("div");
-        box.className = "diary-card";
-        box.innerHTML =
-          `<h2>🌙 ${date}</h2>
-           <p>${entry}</p>
-           <div class='footer-tip'>让幸福具象化，截图可以留念～</div>`;
+      const box = document.createElement("div");
+      box.className = "diary-card";
+      box.innerHTML =
+        `<h2>🌙 ${date}</h2>
+         <p>${entry}</p>
+         <div class='footer-tip'>让幸福具象化，截图可以留念～</div>`;
 
-        document.getElementById("text").style.display = "none";
-        document.getElementById("diary").appendChild(box);
-      }
+      document.getElementById("text").style.display = "none";
+      document.getElementById("diary").appendChild(box);
     });
+
   </script>
 </body>
 </html>
