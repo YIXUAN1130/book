@@ -71,6 +71,8 @@
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
     }
 
+    input::placeholder { color: rgba(255,255,255,0.6); }
+
     button {
       margin-top: 20px;
       padding: 12px 40px;
@@ -82,6 +84,11 @@
       cursor: pointer;
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
       transition: all 0.3s ease;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 50px rgba(213, 242, 251, 0.5);
     }
 
     .text-box {
@@ -110,7 +117,6 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       animation: fadeIn 1s ease;
     }
 
@@ -127,182 +133,191 @@
     }
   </style>
 </head>
-
 <body>
-  <canvas id="snow"></canvas>
 
-  <div id="login">
-    <h1>请输入口令</h1>
-    <input id="keyInput" placeholder="例如：A7K3F2" />
-    <button onclick="verifyKey()">进入</button>
-    <p id="hint" style="color:#fff; margin-top:15px;"></p>
-  </div>
+<canvas id="snow"></canvas>
 
-  <div id="diary" style="display:none;">
-    <div id="text" class="text-box">日记查询₊˚‧🤍‧˚₊</div>
-  </div>
+<div id="login">
+  <h1>请输入口令</h1>
+  <input id="keyInput" placeholder="例如：A7K3F2" />
+  <button onclick="verifyKey()">进入</button>
+  <p id="hint" style="color:#fff; margin-top:15px;"></p>
+</div>
 
-  <script>
-    /**********************
-     * 自适应高度
-     **********************/
-    function setVh() {
-      document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+<div id="diary" style="display:none;">
+  <div id="text" class="text-box">日记查询₊˚‧🤍‧˚₊</div>
+</div>
+
+<script>
+/* ---------------- 🌿 自适应高度 ---------------- */
+function setVh() {
+  document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+}
+window.addEventListener('resize', setVh);
+setVh();
+
+/* ---------------- ❄️ 雪花动画 ---------------- */
+const canvas = document.getElementById("snow");
+const ctx = canvas.getContext("2d");
+let w, h;
+const SNOW_COUNT = 200;
+const snowflakes = [];
+
+function resize() {
+  w = canvas.width = window.innerWidth;
+  h = canvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resize);
+resize();
+
+class Snowflake {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * w;
+    this.y = Math.random() * h;
+    this.radius = Math.random() * 2.5 + 0.5;
+    this.speedY = Math.random() * 1.5 + 0.5;
+    this.opacity = Math.random() * 0.5 + 0.3;
+    this.blur = Math.random() * 8 + 2;
+  }
+  update() {
+    this.y += this.speedY;
+    if (this.y > h + 5) this.reset();
+  }
+  draw(ctx) {
+    ctx.beginPath();
+    ctx.shadowBlur = this.blur;
+    ctx.shadowColor = `rgba(255,255,255,${this.opacity})`;
+    ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+for (let i = 0; i < SNOW_COUNT; i++) snowflakes.push(new Snowflake());
+
+function animate() {
+  ctx.clearRect(0, 0, w, h);
+  snowflakes.forEach(s => { s.update(); s.draw(ctx); });
+  requestAnimationFrame(animate);
+}
+animate();
+
+/* ---------------- 🔐 登录 ---------------- */
+const PERMANENT_KEY = "STAR17";
+const LOGIN_EXPIRY_HOURS = 1;
+
+function checkLoginStatus() {
+  const savedTime = localStorage.getItem("lastLoginTime");
+  if (savedTime) {
+    const diff = (Date.now() - parseInt(savedTime)) / (1000 * 60 * 60);
+    if (diff < LOGIN_EXPIRY_HOURS) {
+      document.getElementById("login").style.display = "none";
+      document.getElementById("diary").style.display = "flex";
+      return;
     }
-    window.addEventListener('resize', setVh);
-    setVh();
+  }
+  localStorage.removeItem("lastLoginTime");
+}
+window.addEventListener("DOMContentLoaded", checkLoginStatus);
 
-    /**********************
-     * 雪花背景
-     **********************/
-    const canvas = document.getElementById("snow");
-    const ctx = canvas.getContext("2d");
-    let w, h;
-    const snowflakes = [];
+function verifyKey() {
+  const val = document.getElementById("keyInput").value.trim();
+  if (val === PERMANENT_KEY) {
+    localStorage.setItem("lastLoginTime", Date.now().toString());
+    document.getElementById("login").style.display = "none";
+    document.getElementById("diary").style.display = "flex";
+  } else {
+    document.getElementById("hint").textContent = "❌ 口令错误，请重新输入";
+  }
+}
 
-    function resize() {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-    }
-    window.addEventListener("resize", resize);
-    resize();
+/* ---------------- 📅 当前日期 ---------------- */
+function getCurrentDate() {
+  const now = new Date();
+  return `${String(now.getMonth()+1).padStart(2,"0")}月${String(now.getDate()).padStart(2,"0")}日`;
+}
 
-    class Snowflake {
-      constructor() { this.reset(); }
-      reset() {
-        this.x = Math.random() * w;
-        this.y = Math.random() * h;
-        this.radius = Math.random() * 2.5 + 0.5;
-        this.speedY = Math.random() * 1.5 + 0.5;
-        this.opacity = Math.random() * 0.5 + 0.3;
-        this.blur = Math.random() * 8 + 2;
-      }
-      update() {
-        this.y += this.speedY;
-        if (this.y > h + 5) this.reset();
-      }
-      draw(ctx) {
-        ctx.beginPath();
-        ctx.shadowBlur = this.blur;
-        ctx.shadowColor = `rgba(255,255,255,${this.opacity})`;
-        ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
+/* ---------------- 🌙 文案逻辑（方案 B）---------------- */
+let diaryEntries = [];
+let loadPromise = null;
 
-    for (let i = 0; i < 200; i++) snowflakes.push(new Snowflake());
-    function animate() {
-      ctx.clearRect(0, 0, w, h);
-      snowflakes.forEach(s => { s.update(); s.draw(ctx); });
-      requestAnimationFrame(animate);
-    }
-    animate();
+// 加载文案（仅一次）
+function loadDiaries() {
+  if (loadPromise) return loadPromise;
 
-    /**********************
-     * 登录逻辑
-     **********************/
-    const PERMANENT_KEY = "STAR17";
-    const LOGIN_EXPIRY_HOURS = 1;
+  loadPromise = (async () => {
+    const res = await fetch("https://bairixiaoyu.xyz/diary_date.json");
+    const data = await res.json();
+    diaryEntries = data.entries;
+    initPool();
+  })();
 
-    function checkLoginStatus() {
-      const saved = localStorage.getItem("lastLoginTime");
-      if (saved) {
-        const diff = (Date.now() - parseInt(saved, 10)) / (1000 * 60 * 60);
-        if (diff < LOGIN_EXPIRY_HOURS) {
-          document.getElementById("login").style.display = "none";
-          document.getElementById("diary").style.display = "flex";
-          return;
-        }
-      }
-      localStorage.removeItem("lastLoginTime");
-    }
+  return loadPromise;
+}
 
-    function verifyKey() {
-      const input = document.getElementById("keyInput").value.trim();
-      const hint = document.getElementById("hint");
+// 初始化池子（40 条全新轮）
+function initPool() {
+  const total = diaryEntries.length;
+  const all = [...Array(total).keys()];
 
-      if (input === PERMANENT_KEY) {
-        localStorage.setItem("lastLoginTime", Date.now().toString());
-        document.getElementById("login").style.display = "none";
-        document.getElementById("diary").style.display = "flex";
-      } else {
-        hint.textContent = "❌ 口令错误，请重新输入";
-      }
-    }
+  localStorage.setItem("remainingIdx", JSON.stringify(all));
+  localStorage.setItem("usedIdx", JSON.stringify([]));
+}
 
-    window.addEventListener("DOMContentLoaded", checkLoginStatus);
+// 从 localStorage 读取池子
+function getRemaining() {
+  return JSON.parse(localStorage.getItem("remainingIdx") || "[]");
+}
 
-    /**********************
-     * 文案逻辑（Promise 单例锁）
-     **********************/
-    let diaryEntries = [];
-    let shufflePool = [];
-    let diariesPromise = null;  // 🔥 单例锁：确保只初始化 1 次
+function getUsed() {
+  return JSON.parse(localStorage.getItem("usedIdx") || "[]");
+}
 
-    function shuffle(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    }
+// 保存池子
+function savePools(remaining, used) {
+  localStorage.setItem("remainingIdx", JSON.stringify(remaining));
+  localStorage.setItem("usedIdx", JSON.stringify(used));
+}
 
-    function loadDiaries() {
-      if (diariesPromise) return diariesPromise; // 🔒 已初始化过
+// 点击抽取
+document.getElementById("text").addEventListener("click", async () => {
+  await loadDiaries();
 
-      diariesPromise = (async () => {
-        try {
-          const res = await fetch("https://bairixiaoyu.xyz/diary_date.json");
-          const data = await res.json();
+  let remaining = getRemaining();
+  let used = getUsed();
 
-          diaryEntries = [...new Set(data.entries)];
-          shufflePool = shuffle([...diaryEntries]);
+  // 如果剩余为空 → 重置新一轮
+  if (remaining.length === 0) {
+    initPool();
+    remaining = getRemaining();
+    used = [];
+  }
 
-        } catch {
-          const card = document.createElement("div");
-          card.className = "diary-card";
-          card.innerHTML = "<p>⚠️ 无法加载文库内容，请检查链接。</p>";
-          document.getElementById("diary").appendChild(card);
-        }
-        return true;
-      })();
+  // 抽一个随机索引
+  const pickIndex = Math.floor(Math.random() * remaining.length);
+  const diaryIndex = remaining[pickIndex];
 
-      return diariesPromise;
-    }
+  remaining.splice(pickIndex, 1);
+  used.push(diaryIndex);
 
-    function getCurrentDate() {
-      const now = new Date();
-      const m = String(now.getMonth() + 1).padStart(2, "0");
-      const d = String(now.getDate()).padStart(2, "0");
-      return `${m}月${d}日`;
-    }
+  savePools(remaining, used);
 
-    /**********************
-     * 点击抽取逻辑
-     **********************/
-    document.getElementById("text").addEventListener("click", async () => {
+  const text = diaryEntries[diaryIndex];
+  const date = getCurrentDate();
 
-      await loadDiaries(); // ❤️ 这确保永远只加载一次
+  const box = document.createElement("div");
+  box.className = "diary-card";
+  box.innerHTML = `
+    <h2>🌙 ${date}</h2>
+    <p>${text}</p>
+    <div class="footer-tip">让幸福具象化，截图可以留念～</div>
+  `;
 
-      if (shufflePool.length === 0) {
-        shufflePool = shuffle([...diaryEntries]); // 第二轮
-      }
+  document.getElementById("text").style.display = "none";
+  document.getElementById("diary").appendChild(box);
+});
 
-      const entry = shufflePool.pop();
-      const date = getCurrentDate();
-
-      const box = document.createElement("div");
-      box.className = "diary-card";
-      box.innerHTML =
-        `<h2>🌙 ${date}</h2>
-         <p>${entry}</p>
-         <div class='footer-tip'>让幸福具像化，截图可以留念～</div>`;
-
-      document.getElementById("text").style.display = "none";
-      document.getElementById("diary").appendChild(box);
-    });
-
-  </script>
+</script>
 </body>
 </html>
+
