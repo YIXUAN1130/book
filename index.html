@@ -71,8 +71,6 @@
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
     }
 
-    input::placeholder { color: rgba(255,255,255,0.6); }
-
     button {
       margin-top: 20px;
       padding: 12px 40px;
@@ -84,11 +82,6 @@
       cursor: pointer;
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
       transition: all 0.3s ease;
-    }
-
-    button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 10px 50px rgba(213, 242, 251, 0.5);
     }
 
     .text-box {
@@ -160,13 +153,12 @@
     setVh();
 
     /**********************
-     * 雪花动画
+     * 雪花背景
      **********************/
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     let w, h;
     const snowflakes = [];
-    const SNOW_COUNT = 200;
 
     function resize() {
       w = canvas.width = window.innerWidth;
@@ -199,8 +191,7 @@
       }
     }
 
-    for (let i = 0; i < SNOW_COUNT; i++) snowflakes.push(new Snowflake());
-
+    for (let i = 0; i < 200; i++) snowflakes.push(new Snowflake());
     function animate() {
       ctx.clearRect(0, 0, w, h);
       snowflakes.forEach(s => { s.update(); s.draw(ctx); });
@@ -209,7 +200,7 @@
     animate();
 
     /**********************
-     * 登录系统
+     * 登录逻辑
      **********************/
     const PERMANENT_KEY = "STAR17";
     const LOGIN_EXPIRY_HOURS = 1;
@@ -230,6 +221,7 @@
     function verifyKey() {
       const input = document.getElementById("keyInput").value.trim();
       const hint = document.getElementById("hint");
+
       if (input === PERMANENT_KEY) {
         localStorage.setItem("lastLoginTime", Date.now().toString());
         document.getElementById("login").style.display = "none";
@@ -242,11 +234,11 @@
     window.addEventListener("DOMContentLoaded", checkLoginStatus);
 
     /**********************
-     * 文库逻辑（无重复池）
+     * 文案逻辑（Promise 单例锁）
      **********************/
     let diaryEntries = [];
     let shufflePool = [];
-    let diariesLoaded = false;  // ❗阻止二次初始化
+    let diariesPromise = null;  // 🔥 单例锁：确保只初始化 1 次
 
     function shuffle(arr) {
       for (let i = arr.length - 1; i > 0; i--) {
@@ -256,49 +248,56 @@
       return arr;
     }
 
-    async function loadDiaries() {
-      if (diariesLoaded) return;  // ❗防止重复执行
-      diariesLoaded = true;
+    function loadDiaries() {
+      if (diariesPromise) return diariesPromise; // 🔒 已初始化过
 
-      try {
-        const res = await fetch("https://bairixiaoyu.xyz/diary_date.json");
-        const data = await res.json();
+      diariesPromise = (async () => {
+        try {
+          const res = await fetch("https://bairixiaoyu.xyz/diary_date.json");
+          const data = await res.json();
 
-        diaryEntries = [...new Set(data.entries)];
-        shufflePool = shuffle([...diaryEntries]);
+          diaryEntries = [...new Set(data.entries)];
+          shufflePool = shuffle([...diaryEntries]);
 
-      } catch {
-        showError("⚠️ 无法加载文库内容，请检查链接。");
-      }
+        } catch {
+          const card = document.createElement("div");
+          card.className = "diary-card";
+          card.innerHTML = "<p>⚠️ 无法加载文库内容，请检查链接。</p>";
+          document.getElementById("diary").appendChild(card);
+        }
+        return true;
+      })();
+
+      return diariesPromise;
     }
 
-    function showError(msg) {
-      const card = document.createElement("div");
-      card.className = "diary-card";
-      card.innerHTML = `<p>${msg}</p>`;
-      document.getElementById("diary").appendChild(card);
+    function getCurrentDate() {
+      const now = new Date();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      return `${m}月${d}日`;
     }
 
+    /**********************
+     * 点击抽取逻辑
+     **********************/
     document.getElementById("text").addEventListener("click", async () => {
 
-      await loadDiaries(); // 不再多重初始化
+      await loadDiaries(); // ❤️ 这确保永远只加载一次
 
       if (shufflePool.length === 0) {
-        shufflePool = shuffle([...diaryEntries]); // 第二轮开始
+        shufflePool = shuffle([...diaryEntries]); // 第二轮
       }
 
       const entry = shufflePool.pop();
-      const date = (() => {
-        const now = new Date();
-        return `${String(now.getMonth() + 1).padStart(2,'0')}月${String(now.getDate()).padStart(2,'0')}日`;
-      })();
+      const date = getCurrentDate();
 
       const box = document.createElement("div");
       box.className = "diary-card";
       box.innerHTML =
         `<h2>🌙 ${date}</h2>
          <p>${entry}</p>
-         <div class='footer-tip'>让幸福具象化，截图可以留念～</div>`;
+         <div class='footer-tip'>让幸福具像化，截图可以留念～</div>`;
 
       document.getElementById("text").style.display = "none";
       document.getElementById("diary").appendChild(box);
@@ -307,4 +306,3 @@
   </script>
 </body>
 </html>
-
