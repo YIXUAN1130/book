@@ -252,7 +252,7 @@
     let diaryEntries = [];
     async function loadDiaries() {
       try {
-        const res = await fetch("https://raw.githubusercontent.com/YIXUAN1130/book/main/diary_date.json");
+        const res = await fetch("https://yixuan1130.github.io/book/diary_date.json");
         const data = await res.json();
         diaryEntries = data.entries;
       } catch {
@@ -279,3 +279,4 @@
   </script>
 </body>
 </html>
+
