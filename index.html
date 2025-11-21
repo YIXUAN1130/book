@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>夢占日記本</title>
+
   <style>
     :root { --vh: 100%; }
 
@@ -42,10 +43,9 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      font-family: 'MuyaoSoftbrush';
     }
 
-    h1, input, button, p, .text-box, .footer-tip {
+    h1, input, button, .text-box, p {
       font-family: 'MuyaoSoftbrush' !important;
     }
 
@@ -62,46 +62,38 @@
       width: 220px;
       padding: 12px 18px;
       font-size: 18px;
+      text-align: center;
       border: none;
       outline: none;
-      text-align: center;
       color: #fff;
-      background: rgba(213, 242, 251, 0.2);
       border-radius: 25px;
+      background: rgba(213, 242, 251, 0.2);
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
     }
-
-    input::placeholder { color: rgba(255,255,255,0.6); }
 
     button {
       margin-top: 20px;
       padding: 12px 40px;
       font-size: 18px;
-      border: none;
       border-radius: 25px;
-      background: rgba(213, 242, 251, 0.2);
-      color: #fff;
+      border: none;
       cursor: pointer;
+      background: rgba(213, 242, 251, 0.2);
       box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
-      transition: all 0.3s ease;
+      color: white;
+      transition: all .3s;
     }
 
-    button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 10px 50px rgba(213, 242, 251, 0.5);
-    }
+    button:hover { transform: scale(1.05); }
 
     .text-box {
       padding: 25px 60px;
       font-size: 26px;
-      font-weight: bold;
-      cursor: pointer;
       background: rgba(213, 242, 251, 0.2);
       border-radius: 25px;
-      box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
       backdrop-filter: blur(25px);
-      color: #fff;
-      transition: all 0.3s ease;
+      box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
+      cursor: pointer;
     }
 
     .diary-card {
@@ -112,19 +104,15 @@
       line-height: 1.8;
       background: rgba(213, 242, 251, 0.2);
       border-radius: 25px;
-      box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
       backdrop-filter: blur(25px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      animation: fadeIn 1s ease;
+      box-shadow: 0 10px 40px rgba(213, 242, 251, 0.25);
+      animation: fadeIn 1s;
     }
 
     .footer-tip {
       font-size: 15px;
-      color: rgba(255,255,255,0.8);
-      margin-top: 25px;
-      font-style: italic;
+      margin-top: 20px;
+      color: rgba(255,255,255,.8);
     }
 
     @keyframes fadeIn {
@@ -133,6 +121,7 @@
     }
   </style>
 </head>
+
 <body>
 
 <canvas id="snow"></canvas>
@@ -141,7 +130,7 @@
   <h1>请输入口令</h1>
   <input id="keyInput" placeholder="例如：A7K3F2" />
   <button onclick="verifyKey()">进入</button>
-  <p id="hint" style="color:#fff; margin-top:15px;"></p>
+  <p id="hint" style="color:white;margin-top:10px;"></p>
 </div>
 
 <div id="diary" style="display:none;">
@@ -149,175 +138,168 @@
 </div>
 
 <script>
-/* ---------------- 🌿 自适应高度 ---------------- */
+/* ---------------- 自适应高度 ---------------- */
 function setVh() {
-  document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+  document.documentElement.style.setProperty("--vh", `${window.innerHeight * 0.01}px`);
 }
-window.addEventListener('resize', setVh);
 setVh();
+window.addEventListener("resize", setVh);
 
-/* ---------------- ❄️ 雪花动画 ---------------- */
+/* ---------------- 雪花动画 ---------------- */
 const canvas = document.getElementById("snow");
 const ctx = canvas.getContext("2d");
 let w, h;
-const SNOW_COUNT = 200;
-const snowflakes = [];
 
-function resize() {
+function resizeCanvas() {
   w = canvas.width = window.innerWidth;
   h = canvas.height = window.innerHeight;
 }
-window.addEventListener("resize", resize);
-resize();
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
 
-class Snowflake {
-  constructor() { this.reset(); }
+class Flake {
+  constructor(){ this.reset(); }
   reset() {
     this.x = Math.random() * w;
     this.y = Math.random() * h;
-    this.radius = Math.random() * 2.5 + 0.5;
-    this.speedY = Math.random() * 1.5 + 0.5;
-    this.opacity = Math.random() * 0.5 + 0.3;
-    this.blur = Math.random() * 8 + 2;
+    this.r = Math.random() * 2.5 + .5;
+    this.s = Math.random() * 1.5 + .5;
+    this.o = Math.random() * .5 + .3;
   }
-  update() {
-    this.y += this.speedY;
-    if (this.y > h + 5) this.reset();
+  update(){
+    this.y += this.s;
+    if(this.y > h) this.reset();
   }
-  draw(ctx) {
+  draw(){
     ctx.beginPath();
-    ctx.shadowBlur = this.blur;
-    ctx.shadowColor = `rgba(255,255,255,${this.opacity})`;
-    ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${this.o})`;
+    ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
     ctx.fill();
   }
 }
-for (let i = 0; i < SNOW_COUNT; i++) snowflakes.push(new Snowflake());
 
-function animate() {
-  ctx.clearRect(0, 0, w, h);
-  snowflakes.forEach(s => { s.update(); s.draw(ctx); });
+const flakes = [];
+for(let i=0;i<200;i++) flakes.push(new Flake());
+
+function animate(){
+  ctx.clearRect(0,0,w,h);
+  flakes.forEach(f=>{f.update();f.draw(ctx);});
   requestAnimationFrame(animate);
 }
 animate();
 
-/* ---------------- 🔐 登录 ---------------- */
-const PERMANENT_KEY = "STAR17";
-const LOGIN_EXPIRY_HOURS = 1;
+/* ---------------- 登录系统 ---------------- */
+const KEY = "STAR17";
+const EXPIRE = 1;
 
-function checkLoginStatus() {
-  const savedTime = localStorage.getItem("lastLoginTime");
-  if (savedTime) {
-    const diff = (Date.now() - parseInt(savedTime)) / (1000 * 60 * 60);
-    if (diff < LOGIN_EXPIRY_HOURS) {
-      document.getElementById("login").style.display = "none";
-      document.getElementById("diary").style.display = "flex";
-      return;
+function checkLogin(){
+  const t = localStorage.getItem("loginTime");
+  if(t){
+    const diff = (Date.now() - Number(t)) / 3600000;
+    if(diff < EXPIRE){
+      login.style.display="none";
+      diary.style.display="flex";
+    } else {
+      localStorage.removeItem("loginTime");
     }
   }
-  localStorage.removeItem("lastLoginTime");
 }
-window.addEventListener("DOMContentLoaded", checkLoginStatus);
+checkLogin();
 
-function verifyKey() {
-  const val = document.getElementById("keyInput").value.trim();
-  if (val === PERMANENT_KEY) {
-    localStorage.setItem("lastLoginTime", Date.now().toString());
-    document.getElementById("login").style.display = "none";
-    document.getElementById("diary").style.display = "flex";
-  } else {
-    document.getElementById("hint").textContent = "❌ 口令错误，请重新输入";
+function verifyKey(){
+  const val = keyInput.value.trim();
+  if(val === KEY){
+    localStorage.setItem("loginTime", Date.now());
+    login.style.display="none";
+    diary.style.display="flex";
+  }else{
+    hint.textContent="❌ 口令错误，请重新输入";
   }
 }
 
-/* ---------------- 📅 当前日期 ---------------- */
-function getCurrentDate() {
-  const now = new Date();
-  return `${String(now.getMonth()+1).padStart(2,"0")}月${String(now.getDate()).padStart(2,"0")}日`;
-}
-
-/* ---------------- 🌙 文案逻辑（方案 B）---------------- */
+/* ---------------- 加载文案（不会重复执行） ---------------- */
 let diaryEntries = [];
 let loadPromise = null;
+const JSON_URL = "https://yixuan1130.github.io/book/diary_date.json";
 
-// 加载文案（仅一次）
-function loadDiaries() {
-  if (loadPromise) return loadPromise;
+function loadDiaries(){
+  if(loadPromise) return loadPromise;
 
-  loadPromise = (async () => {
-    const res = await fetch("https://bairixiaoyu.xyz/diary_date.json");
+  loadPromise = (async()=>{
+    const res = await fetch(JSON_URL);
     const data = await res.json();
     diaryEntries = data.entries;
-    initPool();
+
+    if(!localStorage.getItem("remainingIdx")){
+      initPool();
+    }
   })();
 
   return loadPromise;
 }
 
-// 初始化池子（40 条全新轮）
-function initPool() {
-  const total = diaryEntries.length;
-  const all = [...Array(total).keys()];
-
+/* ---------------- 随机池 ---------------- */
+function initPool(){
+  const all = [...diaryEntries.keys()];
   localStorage.setItem("remainingIdx", JSON.stringify(all));
-  localStorage.setItem("usedIdx", JSON.stringify([]));
+  localStorage.setItem("usedIdx", "[]");
 }
 
-// 从 localStorage 读取池子
-function getRemaining() {
+function getRemaining(){
   return JSON.parse(localStorage.getItem("remainingIdx") || "[]");
 }
 
-function getUsed() {
+function getUsed(){
   return JSON.parse(localStorage.getItem("usedIdx") || "[]");
 }
 
-// 保存池子
-function savePools(remaining, used) {
-  localStorage.setItem("remainingIdx", JSON.stringify(remaining));
-  localStorage.setItem("usedIdx", JSON.stringify(used));
+function savePools(r,u){
+  localStorage.setItem("remainingIdx", JSON.stringify(r));
+  localStorage.setItem("usedIdx", JSON.stringify(u));
 }
 
-// 点击抽取
-document.getElementById("text").addEventListener("click", async () => {
+/* ---------------- 抽取文案 ---------------- */
+let clicking = false;
+
+document.getElementById("text").addEventListener("click", async ()=>{
+  if(clicking) return;
+  clicking = true;
+
   await loadDiaries();
 
   let remaining = getRemaining();
   let used = getUsed();
 
-  // 如果剩余为空 → 重置新一轮
-  if (remaining.length === 0) {
+  if(remaining.length === 0){
     initPool();
     remaining = getRemaining();
     used = [];
   }
 
-  // 抽一个随机索引
-  const pickIndex = Math.floor(Math.random() * remaining.length);
-  const diaryIndex = remaining[pickIndex];
+  const pick = Math.floor(Math.random()*remaining.length);
+  const idx = remaining[pick];
 
-  remaining.splice(pickIndex, 1);
-  used.push(diaryIndex);
+  remaining.splice(pick,1);
+  used.push(idx);
+  savePools(remaining,used);
 
-  savePools(remaining, used);
+  const entry = diaryEntries[idx];
+  const now = new Date();
+  const date = `${String(now.getMonth()+1).padStart(2,"0")}月${String(now.getDate()).padStart(2,"0")}日`;
 
-  const text = diaryEntries[diaryIndex];
-  const date = getCurrentDate();
-
-  const box = document.createElement("div");
-  box.className = "diary-card";
-  box.innerHTML = `
+  const card = document.createElement("div");
+  card.className="diary-card";
+  card.innerHTML = `
     <h2>🌙 ${date}</h2>
-    <p>${text}</p>
+    <p>${entry}</p>
     <div class="footer-tip">让幸福具象化，截图可以留念～</div>
   `;
 
-  document.getElementById("text").style.display = "none";
-  document.getElementById("diary").appendChild(box);
-});
+  text.style.display="none";
+  diary.appendChild(card);
 
+  clicking = false;
+});
 </script>
 </body>
 </html>
-
